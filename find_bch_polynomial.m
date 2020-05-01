@@ -1,4 +1,45 @@
 ## Brute force a BCH polynomial knowing syndrome outputs
+##
+## The goal of this script is to find a way to determine the primary BCH
+## polynomial that is used by a given hardware ECC engine to derive its
+## generator polynomial for a given BCH code.
+##
+## Depending of the Gallois Field order of the desired BCH code, there are a
+## defined number of primary polynomial that can be used. Polynomials can be
+## under the form of an integer or given as a binary array. In both cases, set
+## bits represent the coefficients for a given order of magnitude of a
+## polynomial representation of the code:
+##     0xD = b1101 = 1 + x^2 + x^3
+## There are tables which list, for a given order, how to derive the
+## primary polynomials, see:
+##     https://www.partow.net/programming/polynomials/index.html
+## Given an initial state using:
+##     {data to protect: 4096 bits, strength: t = 4 bits}
+## we can derive a Gallois field order m that is bigger than the amount of data
+## to protect so that:
+##     2^m > 4096 => m = 13
+## The total amount of manipulated data (payload, parity bits, eventual
+## padding), also called BCH codeword in papers, is:
+##     n = 2^m-1 = 8191
+## We expect that ECC bytes will be written into 7 bytes (derivation
+## available in Linux lib/bch.c). The exact number of parity bits is:
+##     m * t = 13 * 4 = 52 bits (6,5 bytes)
+## Given the size of the codeword, it is then possible to derive the
+## number of parity bits which are needed to achieve a certain strength,
+## and this gives us the maximum message length:
+##     k = 8191 - 52 = 8139
+## With BCH, it has been shown that if (n, k) is a valid BCH code, then
+## (n - x, k - x) will also be valid. In our situation, it means that:
+##     x = k - 4096 = 8139 - 4096 = 4043
+## Then, we must feed our algorithm with known inputs and output. We write an
+## ECC step full of 0s and another one full of Fs. With this we are able to
+## find the output of the BCH encoding, giving a syndrome of 52 bits in both
+## cases. We can now, for each primary polynom, produce a generator polynom,
+## use it to encode both buffers and compare the output syndromes with the
+## expected buffers (from the hardware output).
+## If running this test do not give any match, try swapping bits at byte
+## level and eventually reorder bytes as well.
+
 pkg load signal
 pkg load communications
 clear
