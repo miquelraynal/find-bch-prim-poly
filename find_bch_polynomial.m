@@ -69,7 +69,7 @@ function k = find_k (n, t)
   npoly = bchpoly(n); # This takes a long time
   for i = 1:rows(npoly)
     if (npoly(i,3) == t)
-      k = npoly(i,2) # Just set k and skip this function when you know it
+      k = npoly(i,2); # Just set k and skip this function when you know it
       break;
     endif
   endfor
