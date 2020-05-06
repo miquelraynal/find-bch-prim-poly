@@ -52,7 +52,7 @@ eccstrength = 4
 
 # Useful definitions
 min_m = 5;
-eccsizeb = 512 * 8;
+eccsizeb = eccsize * 8;
 buf_00s(1:eccsizeb) = 0;
 buf_FFs(1:eccsizeb) = 1;
 
